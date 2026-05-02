@@ -364,6 +364,14 @@ export class SceneManager {
         console.log("--- WARDROBE AUDIT ---");
         this.character.getChildMeshes().forEach(m => {
             console.log(`Mesh: ${m.name} | Material: ${m.material ? m.material.name : "None"}`);
+            
+            // Check for Morph Targets
+            if (m.morphTargetManager) {
+                console.log(`  > Morph Targets found on ${m.name}:`);
+                for (let i = 0; i < m.morphTargetManager.numTargets; i++) {
+                    console.log(`    [${i}] ${m.morphTargetManager.getTarget(i).name}`);
+                }
+            }
         });
     }
 

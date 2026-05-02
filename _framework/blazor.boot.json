@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "3DHumanoidAnimation",
   "resources": {
-    "hash": "sha256-dFZU6+zj5VBtCD2mPaqvcceL2AkeTr+BBAN4WKf16Aw=",
+    "hash": "sha256-bsI8a/kooDtghp5rYbjnaSbEoIUp00DBNOOJXaxRGe0=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.zeuafmp7vl.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Web.odncq7smfk.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
@@ -36,7 +36,7 @@
       "System.Text.Json.ggaeq4lppa.wasm": "System.Text.Json.wasm",
       "System.Text.RegularExpressions.pjhal65ko1.wasm": "System.Text.RegularExpressions.wasm",
       "System.Private.CoreLib.pbvd7ajv24.wasm": "System.Private.CoreLib.wasm",
-      "3DHumanoidAnimation.n1praporsq.wasm": "3DHumanoidAnimation.wasm",
+      "3DHumanoidAnimation.llpra93qmb.wasm": "3DHumanoidAnimation.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.l1ds2rhypd.js": "dotnet.native.js",
       "dotnet.native.etgrtk5jba.wasm": "dotnet.native.wasm",
@@ -95,7 +95,7 @@
       "System.Text.Encodings.Web.z5osepan0o.wasm": "sha256-qWRckNgJUXP/8BMc9tmHvES2SMAuHimXyFmWjbXrfM8=",
       "System.Text.Json.ggaeq4lppa.wasm": "sha256-kFm/582j1HOHAbBY4jbPNgF362iHMOMDoTgqIcIrC3k=",
       "System.Text.RegularExpressions.pjhal65ko1.wasm": "sha256-VdTVx7BqfLgxpexvMTkSI3N233xrnZp5GxwrZM9G28k=",
-      "3DHumanoidAnimation.n1praporsq.wasm": "sha256-dbpTbgJRJEunX8UpyJ7swzjj9ye9OuPKDCZ5JAs/aTE="
+      "3DHumanoidAnimation.llpra93qmb.wasm": "sha256-WXh1cPQokx8ko9hbjgypBHaT0ZR8Ho1qQV+UNLJV1BY="
     }
   },
   "cacheBootResources": true,
