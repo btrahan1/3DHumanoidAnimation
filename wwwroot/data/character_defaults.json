@@ -1,0 +1,29 @@
+{
+  "characters": [
+    {
+      "id": "hvgirl_default",
+      "name": "HV Girl (Cyber)",
+      "modelPath": "models/HVGirl.glb",
+      "attributes": {
+        "height": 1.0,
+        "width": 1.0,
+        "isArmRaised": false,
+        "headRotation": 0
+      },
+      "wardrobe": [
+        { "material": "T-shirt", "color": "#87CEEB", "label": "Shirt" },
+        { "material": "short", "color": "#FFC0CB", "label": "Shorts" },
+        { "material": "hair", "color": "#4B2C20", "label": "Hair" },
+        { "material": "skin", "color": "#8D5524", "label": "Skin" },
+        { "material": "brown", "color": "#5C4033", "label": "Boots" },
+        { "material": "belt", "color": "#000000", "label": "Belt" }
+      ],
+      "bones": {
+        "root": "mixamorig:Hips",
+        "arm": "mixamorig:RightArm",
+        "head": "mixamorig:Head",
+        "hand": "mixamorig:RightHand"
+      }
+    }
+  ]
+}

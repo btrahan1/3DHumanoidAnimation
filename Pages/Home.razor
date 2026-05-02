@@ -1,0 +1,353 @@
+@page "/"
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+
+<PageTitle>Humanoid Animator</PageTitle>
+
+<div class="viewport-container">
+    <canvas id="renderCanvas"></canvas>
+    
+    <div class="hud">
+        <div class="hud-content">
+            <div class="mb-3">
+                <label class="form-label text-white-50 small uppercase">Character Recipes</label>
+                <select class="form-select bg-dark text-white border-secondary" @onchange="OnRecipeSelected">
+                    <option value="">-- Load a Saved Character --</option>
+                    <option value="data/characters/HVGirlDefault.json">HV Girl (Default)</option>
+                    <option value="data/characters/CyberTroll.json">The Cyber-Troll</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-white-50 small uppercase">Active Hero</label>
+                <select class="form-select bg-dark text-white border-secondary" @onchange="OnModelSelected">
+                    <option value="">-- Choose Your Hero --</option>
+                    @foreach(var model in availableModels)
+                    {
+                        <option value="@model.Value">@model.Key</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-white-50 small uppercase">Select Action</label>
+                <select class="form-select bg-dark text-white border-secondary" @onchange="OnAnimationSelected" disabled="@(!isLoaded)">
+                    <option value="">-- Select Move --</option>
+                    @foreach(var anim in availableAnimations)
+                    {
+                        <option value="@anim">@anim</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-outline-info w-100 mb-2" @onclick="EquipSword" disabled="@(!isLoaded)">Equip Laser Sword</button>
+                <button class="btn @(isArmRaised ? "btn-primary" : "btn-outline-primary") w-100 mb-2" @onclick="ToggleArm" disabled="@(!isLoaded)">
+                    @(isArmRaised ? "Lower Arm" : "Raise Arm")
+                </button>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-white-50 small uppercase">Head Control</label>
+                <div class="btn-group w-100">
+                    <button class="btn btn-outline-secondary" @onclick="() => Look(-1.0)" disabled="@(!isLoaded)">Left</button>
+                    <button class="btn btn-outline-secondary" @onclick="() => Look(0)" disabled="@(!isLoaded)">Center</button>
+                    <button class="btn btn-outline-secondary" @onclick="() => Look(1.0)" disabled="@(!isLoaded)">Right</button>
+                </div>
+            </div>
+
+            <div class="mb-3 p-3 bg-dark rounded border border-secondary">
+                <label class="form-label text-white-50 small uppercase mb-3">Physical Attributes</label>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <label class="small text-white-50">Height</label>
+                        <span class="badge bg-secondary">@(heightFactor.ToString("F1"))x</span>
+                    </div>
+                    <input type="range" class="form-range" min="0.5" max="2.0" step="0.1" 
+                           @bind="heightFactor" @bind:event="oninput" 
+                           @onchange='(e) => UpdateAttribute("height", heightFactor.ToString())'>
+                </div>
+
+                <div class="mb-1">
+                    <div class="d-flex justify-content-between">
+                        <label class="small text-white-50">Build / Width</label>
+                        <span class="badge bg-secondary">@(widthFactor.ToString("F1"))x</span>
+                    </div>
+                    <input type="range" class="form-range" min="0.5" max="2.5" step="0.1" 
+                           @bind="widthFactor" @bind:event="oninput" 
+                           @onchange='(e) => UpdateAttribute("width", widthFactor.ToString())'>
+                </div>
+            </div>
+
+            <div class="mb-3 p-3 bg-dark rounded border border-secondary">
+                <label class="form-label text-white-50 small uppercase mb-3">Wardrobe & Style</label>
+                
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="small text-white-50">Shirt</label>
+                        <input type="color" class="form-control form-control-color w-100 bg-transparent border-0" 
+                               value="#87CEEB" @oninput='(e) => ChangeColor("T-shirt", e.Value?.ToString())'>
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-white-50">Shorts</label>
+                        <input type="color" class="form-control form-control-color w-100 bg-transparent border-0" 
+                               value="#FFC0CB" @oninput='(e) => ChangeColor("short", e.Value?.ToString())'>
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="small text-white-50">Hair</label>
+                        <input type="color" class="form-control form-control-color w-100 bg-transparent border-0" 
+                               value="#4B2C20" @oninput='(e) => ChangeColor("hair", e.Value?.ToString())'>
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-white-50">Skin</label>
+                        <input type="color" class="form-control form-control-color w-100 bg-transparent border-0" 
+                               value="#8D5524" @oninput='(e) => ChangeColor("skin", e.Value?.ToString())'>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 p-3 bg-dark rounded border border-info">
+                <label class="form-label text-info small uppercase mb-3">The AI Forge</label>
+                
+                <div class="mb-3">
+                    <label class="small text-white-50">1. AI System Prompt (Copy This)</label>
+                    <textarea class="form-control bg-secondary text-white border-0 small" rows="4" readonly>
+Using the HVGirl model, create a JSON recipe. 
+Materials: T-shirt, short, hair, skin, brown, belt. 
+Attributes: height (0.5-2.0), width (0.5-2.5).
+Output only the raw JSON in this format:
+{
+  "name": "Name",
+  "attributes": { "height": 1.0, "width": 1.0 },
+  "wardrobe": { "T-shirt": "#hex", "short": "#hex", ... }
+}
+                    </textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small text-white-50">2. Paste AI Recipe Here</label>
+                    <textarea class="form-control bg-dark text-info border-secondary" rows="6" 
+                              @bind="rawRecipeJson" placeholder='Paste JSON from AI here...'></textarea>
+                </div>
+
+                <button class="btn btn-info w-100" @onclick="MaterializeCharacter" disabled="@(!isLoaded)">
+                    Materialize Character
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLoaded = false;
+    private bool isArmRaised = false;
+    private double heightFactor = 1.0;
+    private double widthFactor = 1.0;
+    private string rawRecipeJson = "";
+    private IJSObjectReference? module;
+    private List<string> availableAnimations = new();
+    
+    private Dictionary<string, string> availableModels = new()
+    {
+        { "HV Girl (Cyber)", "models/HVGirl.glb" },
+        { "X-Bot (Standard)", "models/Xbot.glb" },
+        { "The Alien", "models/alien.glb" },
+        { "Yeti (Small)", "models/YetiSmall.glb" }
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/SceneManager.js");
+            await module.InvokeVoidAsync("initBabylon");
+        }
+    }
+
+    private async Task OnModelSelected(ChangeEventArgs e)
+    {
+        var url = e.Value?.ToString();
+        if (string.IsNullOrEmpty(url)) return;
+        
+        if (module != null)
+        {
+            isLoaded = await module.InvokeAsync<bool>("loadCharacter", url);
+            if (isLoaded)
+            {
+                availableAnimations = await module.InvokeAsync<List<string>>("getAnimationNames");
+                // Reset factors to default on new model load
+                heightFactor = 1.0;
+                widthFactor = 1.0;
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnRecipeSelected(ChangeEventArgs e)
+    {
+        var url = e.Value?.ToString();
+        if (string.IsNullOrEmpty(url) || module == null) return;
+
+        try
+        {
+            var recipe = await Http.GetFromJsonAsync<CharacterRecipe>(url);
+            if (recipe != null)
+            {
+                await module.InvokeVoidAsync("applyRecipe", recipe);
+                
+                // Sync the UI sliders
+                if (recipe.attributes != null)
+                {
+                    heightFactor = recipe.attributes.height;
+                    widthFactor = recipe.attributes.width;
+                }
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading recipe: {ex.Message}");
+        }
+    }
+
+    private async Task OnAnimationSelected(ChangeEventArgs e)
+    {
+        var name = e.Value?.ToString();
+        if (string.IsNullOrEmpty(name)) return;
+        
+        if (module != null && isLoaded)
+        {
+            await module.InvokeVoidAsync("playAnim", name);
+        }
+    }
+
+    private async Task EquipSword()
+    {
+        if (module != null && isLoaded)
+        {
+            await module.InvokeVoidAsync("equipWeapon");
+        }
+    }
+
+    private async Task ToggleArm()
+    {
+        if (module != null && isLoaded)
+        {
+            isArmRaised = await module.InvokeAsync<bool>("toggleArmRaise");
+            StateHasChanged();
+        }
+    }
+
+    private async Task Look(double angle)
+    {
+        if (module != null && isLoaded)
+        {
+            await module.InvokeVoidAsync("setHeadRotation", angle);
+        }
+    }
+
+    private async Task ChangeColor(string materialName, string? hexColor)
+    {
+        if (module != null && isLoaded && !string.IsNullOrEmpty(hexColor))
+        {
+            await module.InvokeVoidAsync("setMaterialColor", materialName, hexColor);
+        }
+    }
+
+    private async Task UpdateAttribute(string attr, string? value)
+    {
+        if (module != null && isLoaded && double.TryParse(value, out var val))
+        {
+            if (attr == "height") heightFactor = val;
+            if (attr == "width") widthFactor = val;
+            
+            await module.InvokeVoidAsync("setAttribute", attr, val);
+            StateHasChanged();
+        }
+    }
+
+    private async Task MaterializeCharacter()
+    {
+        if (string.IsNullOrEmpty(rawRecipeJson) || module == null) return;
+
+        try
+        {
+            var recipe = System.Text.Json.JsonSerializer.Deserialize<CharacterRecipe>(rawRecipeJson);
+            if (recipe != null)
+            {
+                await module.InvokeVoidAsync("applyRecipe", recipe);
+                
+                // Sync the UI sliders
+                if (recipe.attributes != null)
+                {
+                    heightFactor = recipe.attributes.height;
+                    widthFactor = recipe.attributes.width;
+                }
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error materializing recipe: {ex.Message}");
+        }
+    }
+
+    public class CharacterRecipe
+    {
+        public string id { get; set; } = "";
+        public string name { get; set; } = "";
+        public RecipeAttributes? attributes { get; set; }
+        public Dictionary<string, string>? wardrobe { get; set; }
+    }
+
+    public class RecipeAttributes
+    {
+        public double height { get; set; } = 1.0;
+        public double width { get; set; } = 1.0;
+    }
+}
+
+<style>
+    .viewport-container {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        background: #000;
+    }
+
+    #renderCanvas {
+        width: 100%;
+        height: 100%;
+    }
+
+    .hud {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        color: white;
+        padding: 20px;
+        pointer-events: auto;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .status-online { color: #00ff88; font-weight: bold; }
+    .status-offline { color: #ff4444; font-weight: bold; }
+
+    .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .controls button {
+        border-radius: 8px;
+    }
+</style>

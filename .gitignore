@@ -1,0 +1,21 @@
+# Visual Studio
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Web/JS
+node_modules/
+.npm/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Project Specific
+wwwroot/_framework/
+wwwroot/_bin/
+wwwroot/dist/
