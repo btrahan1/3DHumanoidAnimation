@@ -1,0 +1,17 @@
+{
+  "id": "cyber_troll",
+  "name": "The Cyber-Troll",
+  "baseModel": "models/HVGirl.glb",
+  "attributes": {
+    "height": 0.8,
+    "width": 2.5
+  },
+  "wardrobe": {
+    "T-shirt": "#2D4C1E",
+    "short": "#3C3C3C",
+    "hair": "#1A1A1A",
+    "skin": "#4A5D23",
+    "brown": "#2B1B10",
+    "belt": "#111111"
+  }
+}

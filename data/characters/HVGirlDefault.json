@@ -1,0 +1,17 @@
+{
+  "id": "hvgirl_default",
+  "name": "HV Girl (Default)",
+  "baseModel": "models/HVGirl.glb",
+  "attributes": {
+    "height": 1.0,
+    "width": 1.0
+  },
+  "wardrobe": {
+    "T-shirt": "#87CEEB",
+    "short": "#FFC0CB",
+    "hair": "#4B2C20",
+    "skin": "#8D5524",
+    "brown": "#5C4033",
+    "belt": "#000000"
+  }
+}
